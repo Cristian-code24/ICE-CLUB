@@ -2,14 +2,24 @@
   "name": "ice-club",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mobile:sync": "npm run build && cap sync android",
+    "android:open": "cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.17.10",
     "@supabase/supabase-js": "^2.49.1",
@@ -22,6 +32,8 @@
     "zustand": "^4.5.6"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0",
     "@types/node": "^22.13.4",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

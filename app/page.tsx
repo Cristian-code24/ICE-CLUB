@@ -2,6 +2,9 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
+import { Capacitor } from "@capacitor/core";
 import {
   ArrowDown,
   ArrowRight,
@@ -171,6 +174,53 @@ export default function Home() {
     };
   }, [cartOpen]);
 
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let removeListener: (() => void) | undefined;
+    let cancelled = false;
+    void App.addListener("backButton", ({ canGoBack }) => {
+      if (cartOpen) {
+        setCartOpen(false);
+      } else if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      } else if (canGoBack) {
+        window.history.back();
+      }
+    })
+      .then((listener) => {
+        if (cancelled) {
+          void listener.remove();
+          return;
+        }
+        removeListener = () => {
+          void listener.remove();
+        };
+      })
+      .catch((error: unknown) => {
+        console.error("No se pudo registrar el botón Atrás de Android:", error);
+      });
+
+    return () => {
+      cancelled = true;
+      removeListener?.();
+    };
+  }, [cartOpen, mobileMenuOpen]);
+
+  const openWhatsAppMessage = async (text: string) => {
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url });
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.error("No se pudo abrir WhatsApp:", error);
+      setNotice("No pudimos abrir WhatsApp. Inténtalo otra vez.");
+    }
+  };
+
   const placeOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!items.length) return;
@@ -182,7 +232,8 @@ export default function Home() {
     const classroom = String(formData.get("classroom") ?? "").trim();
     const preferredTime = String(formData.get("time") ?? "").trim();
     const paymentMethod = String(formData.get("payment") ?? "");
-    const whatsappTab = window.open("", "_blank");
+    const isNative = Capacitor.isNativePlatform();
+    const whatsappTab = isNative ? null : window.open("", "_blank");
     if (whatsappTab) whatsappTab.opener = null;
     const deliveryPoint = pointList.find(
       (point) => point.id === selectedDelivery,
@@ -220,9 +271,22 @@ export default function Home() {
       `Teléfono: ${phone}`,
     ].join("\n");
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    try {
+      if (isNative) {
+        await Browser.open({ url: whatsappUrl });
+      } else if (whatsappTab) {
+        whatsappTab.location.href = whatsappUrl;
+      } else {
+        window.location.assign(whatsappUrl);
+      }
+    } catch (error) {
+      console.error("No se pudo abrir WhatsApp para confirmar el pedido:", error);
+      whatsappTab?.close();
+      setNotice("No pudimos abrir WhatsApp. Tu carrito sigue guardado.");
+      setSubmitting(false);
+      return;
+    }
     setSubmitting(false);
-    if (whatsappTab) whatsappTab.location.href = whatsappUrl;
-    else window.location.assign(whatsappUrl);
     clear();
     setCartOpen(false);
   };
@@ -234,11 +298,7 @@ export default function Home() {
     const faculty = String(formData.get("faculty") ?? "").trim();
     const message = String(formData.get("message") ?? "").trim();
     const text = `¡Hola, ICE CLUB! Soy ${name} de ${faculty}. ${message}`;
-    window.open(
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    void openWhatsAppMessage(text);
   };
 
   const scrollVariants = {

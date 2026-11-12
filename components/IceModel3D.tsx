@@ -98,37 +98,15 @@ export default function IceModel3D({
       ("deviceMemory" in navigator &&
         Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) <= 4);
     setLowPower(lowEnd);
-    if (reducedMotion || lowEnd || !supportsWebGL()) return;
+    const hasModel = process.env.ICE_CLUB_MODEL_AVAILABLE === "true";
+    if (reducedMotion || lowEnd || !supportsWebGL() || !hasModel) {
+      availabilityCallback.current?.(false);
+      return;
+    }
 
-    let active = true;
-    fetch("/api/model")
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`Model availability request failed: ${response.status}`);
-        const result: unknown = await response.json();
-        if (
-          !result ||
-          typeof result !== "object" ||
-          !("available" in result) ||
-          typeof result.available !== "boolean"
-        ) {
-          throw new Error("Model availability response has an invalid shape");
-        }
-        if (active && result.available) {
-          useGLTF.preload("/models/ice-club.glb");
-          setAvailable(true);
-        }
-        if (active) availabilityCallback.current?.(result.available);
-      })
-      .catch((error: unknown) => {
-        console.error("No se pudo comprobar si el modelo 3D está disponible:", error);
-        if (active) {
-          setAvailable(false);
-          availabilityCallback.current?.(false);
-        }
-      });
-    return () => {
-      active = false;
-    };
+    useGLTF.preload("/models/ice-club.glb");
+    setAvailable(true);
+    availabilityCallback.current?.(true);
   }, []);
 
   useEffect(() => {

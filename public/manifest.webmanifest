@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "ICE CLUB — Marcianos gourmet artesanos",
+  "short_name": "ICE CLUB",
+  "description": "Marcianos artesanales y entregas en el campus de la UNJFSC, Huacho.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#021B33",
+  "theme_color": "#021B33",
+  "lang": "es-PE",
+  "categories": [
+    "food",
+    "shopping"
+  ],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.webp",
+      "type": "image/webp",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-512.webp",
+      "type": "image/webp",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

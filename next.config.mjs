@@ -3,6 +3,7 @@ import path from "node:path";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
   env: {
     ICE_CLUB_MODEL_AVAILABLE: existsSync(
       path.join(process.cwd(), "public", "models", "ice-club.glb"),
@@ -12,6 +13,7 @@ const nextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    unoptimized: true,
   },
 };
 

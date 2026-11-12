@@ -10,7 +10,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Abre `http://localhost:3000`. Para producción, ejecuta `npm run build` y luego `npm start`.
+Abre `http://localhost:3000`. `npm run build` genera una exportación web estática en `out/`; Vercel la publica como sitio Next.js estático. Para revisar el sitio mientras desarrollas, usa `npm run dev`.
 
 ## Supabase
 
@@ -72,3 +72,55 @@ Repositorio: [Cristian-code24/ICE-CLUB](https://github.com/Cristian-code24/ICE-C
 4. Pulsa **Deploy**. Vercel vuelve a desplegar automáticamente los siguientes cambios de la rama `main`.
 
 El workflow de GitHub Actions ejecuta ESLint y una compilación de producción en cada push a `main` y en cada pull request.
+
+## App Android instalable (APK)
+
+El proyecto está preparado como app híbrida con Capacitor 8. El APK incluye el sitio estático y sus imágenes, por lo que la interfaz abre sin conexión; Supabase y WhatsApp sí necesitan Internet.
+
+### Requisitos para compilar el APK
+
+- Node.js 22 o superior y npm.
+- Android Studio reciente.
+- El JDK incluido con Android Studio (Java 17 o superior).
+- Android SDK Platform 36 y Android SDK Build-Tools instalados desde SDK Manager.
+
+### Sincronizar y abrir en Android Studio
+
+En Windows, abre una terminal PowerShell en el repositorio y ejecuta:
+
+```powershell
+npm install
+Copy-Item .env.example .env.local
+# Completa .env.local con el número real y, opcionalmente, las claves públicas de Supabase.
+npm run mobile:sync
+npm run android:open
+```
+
+`mobile:sync` exporta Next.js a `out/` y copia esa web al proyecto Android nativo. En Android Studio, espera a que Gradle termine de sincronizar y selecciona **Build → Build Bundle(s) / APK(s) → Build APK(s)**. El APK de depuración se crea en:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Puedes instalarlo en un teléfono Android habilitando las instalaciones desde archivos y abriendo el APK. Para probar con USB, activa Depuración USB y usa `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`.
+
+Para distribuir una versión de producción, usa **Build → Generate Signed Bundle / APK**. Crea y guarda la clave de firma en un lugar privado; **no la subas a GitHub ni la compartas por chat**. Para Google Play se debe generar un Android App Bundle (AAB), configurar la ficha de tienda y cumplir sus requisitos de privacidad y publicación.
+
+La app usa el identificador provisional `pe.iceclub.app`. Antes de publicar o actualizar en tiendas, confirma el identificador definitivo: cambiarlo después crea una app Android diferente.
+
+### Iconos y splash
+
+El archivo fuente de marca es `assets/icon.svg`. Para volver a generar los iconos adaptativos, pantallas de inicio e iconos PWA tras cambiar el logo:
+
+```bash
+npx @capacitor/assets generate --android --pwa --iconBackgroundColor "#021B33" --splashBackgroundColor "#021B33"
+npm run mobile:sync
+```
+
+Los iconos Android generados se guardan en `android/app/src/main/res/`; los iconos web y el manifiesto están bajo `public/`.
+
+### Variables antes de la instalación
+
+`NEXT_PUBLIC_WHATSAPP_NUMBER` debe ser el celular comercial con prefijo de país, sin `+` ni espacios. Si usarás Supabase, configura también URL y clave `anon`; nunca pongas una clave `service_role` en la app. Cada cambio a estas variables requiere volver a ejecutar `npm run mobile:sync` y recompilar el APK.
+
+Para preparar la versión final también necesito el nombre e identificador Android definitivos, el número real de WhatsApp, precios/productos confirmados, y los textos/enlace de una política de privacidad y contacto comercial. Para Google Play, la cuenta de desarrollador, la clave de firma y los datos fiscales se configuran únicamente desde tus cuentas; no me envíes contraseñas ni claves privadas.
