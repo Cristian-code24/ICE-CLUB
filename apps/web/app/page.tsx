@@ -58,7 +58,7 @@ export default function Home() {
   const [model360Available, setModel360Available] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const prefersReducedMotion = useReducedMotion();
-  const { items, add, changeQuantity, remove, clear } = useCart();
+  const { items, add, changeQuantity, remove, clear, syncCatalog } = useCart();
   const whatsappNumber =
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "51999999999";
 
@@ -101,18 +101,20 @@ export default function Home() {
         console.error("No se pudo cargar el catálogo de Supabase:", productsResult.error);
         setNotice("Mostrando el menú local mientras vuelve el catálogo.");
       } else if (productsResult.data?.length) {
-        const remoteFlavors: Flavor[] = productsResult.data.map((product) => ({
-          id: product.id,
-          name: product.name,
-          subtitle: product.description,
-          description: product.description,
-          price: Number(product.price),
-          color: product.flavor_color,
-          image: product.image_url?.startsWith("/")
-            ? product.image_url
-            : mockFlavors.find((flavor) => flavor.id === product.id)?.image ??
-              "/assets/ice-pops.jpg",
-        }));
+        const remoteFlavors: Flavor[] = productsResult.data.map((product) => {
+          const localFlavor = mockFlavors.find((flavor) => flavor.id === product.id);
+          return {
+            id: product.id,
+            name: product.name,
+            subtitle: product.description,
+            description: product.description,
+            price: localFlavor?.price ?? Number(product.price),
+            color: product.flavor_color,
+            image: product.image_url?.startsWith("/")
+              ? product.image_url
+              : localFlavor?.image ?? "/assets/ice-pops.jpg",
+          };
+        });
         setProductList(remoteFlavors);
         setSelectedFlavorId((current) =>
           remoteFlavors.some((flavor) => flavor.id === current)
@@ -154,6 +156,10 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    syncCatalog(productList);
+  }, [productList, syncCatalog]);
 
   const addFlavor = (flavor: Flavor) => {
     add({ id: flavor.id, name: flavor.name, price: flavor.price });
@@ -337,7 +343,7 @@ export default function Home() {
               addressCountry: "PE",
             },
             servesCuisine: "Helados artesanales",
-            priceRange: "S/ 4–5",
+            priceRange: "S/ 1.50–2.00",
           }).replace(/</g, "\\u003c"),
         }}
       />
@@ -518,7 +524,7 @@ export default function Home() {
                 whileHover={prefersReducedMotion ? undefined : { y: -5 }}
                 whileTap={{ scale: 0.98 }}
                 aria-pressed={active}
-                aria-label={`Elegir ${flavor.name}, S/ ${flavor.price}`}
+                aria-label={`Elegir ${flavor.name}, S/ ${flavor.price.toFixed(2)}`}
               >
                 <span className="flavor-number">0{index + 1}</span>
                 <span className="flavor-swatch"><span /></span>

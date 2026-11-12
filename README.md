@@ -28,8 +28,9 @@ Abre `http://localhost:3000`. `npm run build` genera una exportación web estát
 3. La landing lee productos y puntos de entrega, y crea pedidos pendientes. La política no habilita lecturas públicas de `orders`.
 4. Sin ambas variables, se usan los datos mock de [`apps/web/data/mock.ts`](./apps/web/data/mock.ts).
 5. Si ya tenías una base ICE CLUB, ejecuta [`apps/web/supabase/migrations/20261111_v2_delivery_address.sql`](./apps/web/supabase/migrations/20261111_v2_delivery_address.sql) para guardar la dirección y permitir que hora y medio de pago sean opcionales.
+6. Para actualizar los precios en una base existente, ejecuta [`apps/web/supabase/migrations/20261112_update_marciano_prices.sql`](./apps/web/supabase/migrations/20261112_update_marciano_prices.sql) en el SQL Editor de Supabase.
 
-Para agregar sabores o puntos, modifica el seed en `apps/web/supabase/schema.sql` y los datos de respaldo en `apps/web/data/mock.ts`. Usa rutas locales de `apps/web/public/` para las imágenes.
+Los precios actuales son S/ 1.50 para Fresa y Maracuyá, y S/ 2.00 para Lúcuma, Mango y Coco. Para agregar sabores o puntos, modifica el seed en `apps/web/supabase/schema.sql` y los datos de respaldo en `apps/web/data/mock.ts`. Usa rutas locales de `apps/web/public/` para las imágenes.
 
 ## Modelo 3D
 
@@ -60,7 +61,7 @@ La escena centra el modelo con su caja envolvente, lo escala a una altura visual
 ## Assets y supuestos pendientes
 
 - Se copiaron a `apps/web/public/assets/` la foto del producto, una foto de marcianos, una composición con varios sabores y cristales de hielo. Los originales en `apps/web/fotos/` no se modificaron.
-- No se suministró un GLB, un mapa real del campus, cuentas sociales ni precios confirmados. Los precios de `apps/web/data/mock.ts` son valores iniciales editables.
+- No se suministró un GLB, un mapa real del campus ni cuentas sociales.
 - Configura `NEXT_PUBLIC_WHATSAPP_NUMBER` con el número real (código de país, sin `+` ni espacios). Actualiza también el enlace de Instagram.
 - La vista AR no aparece porque no se incluyó un GLB ni un visor `<model-viewer>`.
 - Define `NEXT_PUBLIC_SITE_URL` con el dominio final y reemplaza `iceclub.example` en `apps/web/app/robots.ts` y `apps/web/app/sitemap.ts`.
@@ -108,9 +109,13 @@ npm run android:open
 apps/mobile/android/app/build/outputs/apk/debug/iceclub-v2.apk
 ```
 
-Para repetir el proceso completo con un comando en Windows, ejecuta `npm run android:apk` desde `apps/mobile`. El proyecto nativo usa la versión `2.0` (versionCode `2`); el zoom por pellizco se deshabilita en el WebView y el viewport, y la página no permite desplazamiento horizontal. La app carga el sitio y sus recursos desde el paquete; Google Maps, WhatsApp y Supabase requieren Internet para sus funciones.
+Para repetir el proceso completo con un comando en Windows, ejecuta `npm run android:apk` desde `apps/mobile`. El proyecto nativo usa la versión `2.0.1` (versionCode `3`); el zoom por pellizco se deshabilita en el WebView y el viewport, y la página no permite desplazamiento horizontal. La app carga el sitio y sus recursos desde el paquete; Google Maps, WhatsApp y Supabase requieren Internet para sus funciones.
 
 Puedes instalarlo en un teléfono Android habilitando las instalaciones desde archivos y abriendo el APK. Para probar con USB, activa Depuración USB y usa `adb install -r apps/mobile/android/app/build/outputs/apk/debug/iceclub-v2.apk`.
+
+### Actualizaciones de la app
+
+La app incluye el sitio web dentro del APK. Publicar cambios en Vercel actualiza la web, pero no modifica las instalaciones ya hechas. Para avisos y actualizaciones sencillas, publica una versión firmada en Google Play; conserva el mismo identificador y la misma clave de firma, y aumenta `versionCode` en `apps/mobile/android/app/build.gradle` en cada versión. Play Store puede notificar a los usuarios y gestionar la instalación. Una distribución manual por APK necesita alojar cada APK firmado y agregar un comprobador de versiones; Android seguirá pidiendo al usuario que confirme la instalación. El APK de depuración no es una actualización de producción.
 
 Para distribuir una versión de producción, usa **Build → Generate Signed Bundle / APK**. Crea y guarda la clave de firma en un lugar privado; **no la subas a GitHub ni la compartas por chat**. Para Google Play se debe generar un Android App Bundle (AAB), configurar la ficha de tienda y cumplir sus requisitos de privacidad y publicación.
 

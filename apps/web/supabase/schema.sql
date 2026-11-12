@@ -61,11 +61,11 @@ grant insert on public.orders to anon, authenticated;
 insert into public.products
   (id, name, slug, description, price, flavor_color, image_url, is_featured, sort_order)
 values
-  ('lucuma', 'Lúcuma Especial', 'lucuma-especial', 'La reina de la casa, hecha con lúcuma peruana.', 5.00, '#e8a24a', '/assets/ice-pops.jpg', true, 1),
-  ('fresa', 'Fresa Rellena', 'fresa-rellena', 'Fresa cremosa con centro suave para antojarse.', 5.00, '#f472b6', '/assets/ice-pops.jpg', true, 2),
-  ('mango', 'Mango Menta', 'mango-menta', 'Mango maduro con un toque fresco de menta.', 4.00, '#f6c854', '/assets/assorted-pops.webp', false, 3),
-  ('maracuya', 'Maracuyá Citrus', 'maracuya-citrus', 'Maracuyá intenso para despertar el recreo.', 4.00, '#f5a444', '/assets/assorted-pops.webp', false, 4),
-  ('coco', 'Coco Cremoso', 'coco-cremoso', 'Coco cremosito, frío y artesanal.', 4.00, '#c5e8e8', '/assets/ice-pop-pair.png', false, 5)
+  ('lucuma', 'Lúcuma Especial', 'lucuma-especial', 'La reina de la casa, hecha con lúcuma peruana.', 2.00, '#e8a24a', '/assets/ice-pops.jpg', true, 1),
+  ('fresa', 'Fresa Rellena', 'fresa-rellena', 'Fresa cremosa con centro suave para antojarse.', 1.50, '#f472b6', '/assets/ice-pops.jpg', true, 2),
+  ('mango', 'Mango Menta', 'mango-menta', 'Mango maduro con un toque fresco de menta.', 2.00, '#f6c854', '/assets/assorted-pops.webp', false, 3),
+  ('maracuya', 'Maracuyá Citrus', 'maracuya-citrus', 'Maracuyá intenso para despertar el recreo.', 1.50, '#f5a444', '/assets/assorted-pops.webp', false, 4),
+  ('coco', 'Coco Cremoso', 'coco-cremoso', 'Coco cremosito, frío y artesanal.', 2.00, '#c5e8e8', '/assets/ice-pop-pair.png', false, 5)
 on conflict (id) do update set
   name = excluded.name,
   slug = excluded.slug,

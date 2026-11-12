@@ -13,6 +13,7 @@ export type CartItem = {
 type CartState = {
   items: CartItem[];
   add: (product: Omit<CartItem, "quantity">) => void;
+  syncCatalog: (products: Array<Pick<CartItem, "id" | "name" | "price">>) => void;
   changeQuantity: (id: string, delta: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -29,11 +30,37 @@ export const useCart = create<CartState>()(
             items: existing
               ? state.items.map((item) =>
                   item.id === product.id
-                    ? { ...item, quantity: item.quantity + 1 }
+                    ? {
+                        ...item,
+                        name: product.name,
+                        price: product.price,
+                        quantity: item.quantity + 1,
+                      }
                     : item,
                 )
               : [...state.items, { ...product, quantity: 1 }],
           };
+        }),
+      syncCatalog: (products) =>
+        set((state) => {
+          const catalog = new Map<
+            string,
+            Pick<CartItem, "id" | "name" | "price">
+          >();
+          for (const product of products) catalog.set(product.id, product);
+          let changed = false;
+          const items = state.items.map((item) => {
+            const product = catalog.get(item.id);
+            if (
+              !product ||
+              (item.name === product.name && item.price === product.price)
+            ) {
+              return item;
+            }
+            changed = true;
+            return { ...item, name: product.name, price: product.price };
+          });
+          return changed ? { items } : state;
         }),
       changeQuantity: (id, delta) =>
         set((state) => ({
