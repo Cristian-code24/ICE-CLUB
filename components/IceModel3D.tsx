@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useGLTF } from "@react-three/drei";
 import {
   Component,
   Suspense,
@@ -117,7 +116,6 @@ export default function IceModel3D({
   }, []);
 
   useEffect(() => {
-    if (available) useGLTF.preload("/models/ice-club.glb");
     availabilityCallback.current?.(available);
   }, [available]);
 
