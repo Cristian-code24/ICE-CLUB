@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "pe.iceclub.app",
   appName: "ICE CLUB",
-  webDir: "out",
+  webDir: "../web/out",
   server: {
     androidScheme: "https",
   },

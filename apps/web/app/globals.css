@@ -28,7 +28,6 @@ html {
 
 body {
   margin: 0;
-  min-width: 320px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   color: var(--ice-white);
   background:
@@ -38,6 +37,11 @@ body {
   font-family: var(--font-inter), sans-serif;
   overflow-x: hidden;
   touch-action: pan-y;
+}
+
+main {
+  position: relative;
+  overflow-x: clip;
 }
 
 body::before {

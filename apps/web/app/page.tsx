@@ -766,7 +766,7 @@ export default function Home() {
               },
               {
                 question: "¿Qué medios de pago aceptan?",
-                answer: "Puedes elegir Yape, Plin o efectivo al completar tu pedido.",
+                answer: "Aceptamos Yape, Plin o efectivo. Coordinamos el pago por WhatsApp al confirmar tu pedido.",
               },
               {
                 question: "¿Cuánto demora la entrega?",
