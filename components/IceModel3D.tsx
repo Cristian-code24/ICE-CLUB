@@ -10,6 +10,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 const IceScene = dynamic(() => import("./IceScene"), { ssr: false });
@@ -60,6 +61,29 @@ function supportsWebGL() {
   }
 }
 
+function getModelAvailability() {
+  if (
+    typeof window === "undefined" ||
+    process.env.ICE_CLUB_MODEL_AVAILABLE !== "true" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return false;
+  }
+
+  const lowEnd =
+    (navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4) ||
+    ("deviceMemory" in navigator &&
+      Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) <= 4);
+  return !lowEnd && supportsWebGL();
+}
+
+function subscribeToReducedMotion(onChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mediaQuery.addEventListener("change", onChange);
+  return () => mediaQuery.removeEventListener("change", onChange);
+}
+
 export default function IceModel3D({
   flavorName,
   flavorColor,
@@ -72,11 +96,15 @@ export default function IceModel3D({
   const hostRef = useRef<HTMLDivElement>(null);
   const readyCallback = useRef(onModelReady);
   const availabilityCallback = useRef(onAvailabilityChange);
-  const [available, setAvailable] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [sceneFailed, setSceneFailed] = useState(false);
   const [canRender, setCanRender] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [lowPower, setLowPower] = useState(false);
+  const available = useSyncExternalStore(
+    subscribeToReducedMotion,
+    getModelAvailability,
+    () => false,
+  );
 
   useEffect(() => {
     readyCallback.current = onModelReady;
@@ -89,25 +117,9 @@ export default function IceModel3D({
   }, []);
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const lowEnd =
-      (navigator.hardwareConcurrency > 0 &&
-        navigator.hardwareConcurrency <= 4) ||
-      ("deviceMemory" in navigator &&
-        Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) <= 4);
-    setLowPower(lowEnd);
-    const hasModel = process.env.ICE_CLUB_MODEL_AVAILABLE === "true";
-    if (reducedMotion || lowEnd || !supportsWebGL() || !hasModel) {
-      availabilityCallback.current?.(false);
-      return;
-    }
-
-    useGLTF.preload("/models/ice-club.glb");
-    setAvailable(true);
-    availabilityCallback.current?.(true);
-  }, []);
+    if (available) useGLTF.preload("/models/ice-club.glb");
+    availabilityCallback.current?.(available);
+  }, [available]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -130,18 +142,19 @@ export default function IceModel3D({
       document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  const showModel = available && (loaded || visible);
+  const showModel = available && !sceneFailed && (loaded || visible);
+  const modelReady = available && loaded && !sceneFailed;
 
   return (
     <div
       ref={hostRef}
       className="model-stage"
-      data-model-ready={loaded}
+      data-model-ready={modelReady}
       role="group"
       aria-label={`Vista 3D de ${flavorName}`}
     >
       <Image
-        className={`model-fallback ${loaded ? "model-fallback-hidden" : ""}`}
+        className={`model-fallback ${modelReady ? "model-fallback-hidden" : ""}`}
         src={fallbackImage}
         alt={`Marcianos artesanales de ${flavorName}`}
         fill
@@ -151,7 +164,7 @@ export default function IceModel3D({
       {showModel && (
         <SceneErrorBoundary
           onError={() => {
-            setAvailable(false);
+            setSceneFailed(true);
             availabilityCallback.current?.(false);
           }}
         >
@@ -160,7 +173,6 @@ export default function IceModel3D({
               flavorName={flavorName}
               flavorColor={flavorColor}
               active={visible && canRender}
-              lowPower={lowPower}
               showControls={showControls}
               viewAngle={viewAngle}
               onReady={handleReady}
@@ -168,7 +180,7 @@ export default function IceModel3D({
           </Suspense>
         </SceneErrorBoundary>
       )}
-      {!loaded && available && (
+      {!modelReady && available && (
         <div className="model-loader" role="status">
           <span className="loader-ring" />
           <span>Congelando marciano...</span>

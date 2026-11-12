@@ -81,7 +81,7 @@ El proyecto está preparado como app híbrida con Capacitor 8. El APK incluye el
 
 - Node.js 22 o superior y npm.
 - Android Studio reciente.
-- El JDK incluido con Android Studio (Java 17 o superior).
+- JDK 21 o superior (el Android Gradle Plugin del proyecto compila Capacitor con Java 21).
 - Android SDK Platform 36 y Android SDK Build-Tools instalados desde SDK Manager.
 
 ### Sincronizar y abrir en Android Studio

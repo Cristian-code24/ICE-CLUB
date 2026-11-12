@@ -9,7 +9,6 @@ type SceneProps = {
   flavorName: string;
   flavorColor: string;
   active: boolean;
-  lowPower: boolean;
   showControls: boolean;
   viewAngle?: string;
   onReady: () => void;
@@ -18,10 +17,9 @@ type SceneProps = {
 function ProductPair({
   flavorName,
   flavorColor,
-  lowPower,
   viewAngle,
   onReady,
-}: Pick<SceneProps, "flavorName" | "flavorColor" | "lowPower" | "viewAngle" | "onReady">) {
+}: Pick<SceneProps, "flavorName" | "flavorColor" | "viewAngle" | "onReady">) {
   const { scene } = useGLTF("/models/ice-club.glb");
   const group = useRef<Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -68,21 +66,17 @@ function ProductPair({
       const tint = index === 0 ? flavorColor : "#e2faff";
       materials.forEach((material) => {
           material.userData.iceTargetColor = new Color(tint);
-          if (lowPower) {
-            material.roughness = 0.25;
-          } else {
-            const physical = material as MeshPhysicalMaterial;
-            physical.roughness = 0.15;
-            physical.transmission = 0.6;
-            physical.thickness = 0.7;
-            physical.ior = 1.3;
-            physical.clearcoat = 1;
-            physical.clearcoatRoughness = 0.08;
-          }
+          const physical = material as MeshPhysicalMaterial;
+          physical.roughness = 0.15;
+          physical.transmission = 0.6;
+          physical.thickness = 0.7;
+          physical.ior = 1.3;
+          physical.clearcoat = 1;
+          physical.clearcoatRoughness = 0.08;
       });
     });
     onReady();
-  }, [flavorColor, lowPower, onReady, paintMaterials]);
+  }, [flavorColor, onReady, paintMaterials]);
 
   useEffect(() => {
     if (currentFlavor.current !== flavorName) {
@@ -175,10 +169,6 @@ export default function IceScene(props: SceneProps) {
   const [autoRotate, setAutoRotate] = useState(!props.showControls);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setAutoRotate(!props.showControls);
-  }, [props.showControls]);
-
   const stopAutoRotate = () => {
     setAutoRotate(false);
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
@@ -198,11 +188,11 @@ export default function IceScene(props: SceneProps) {
 
   return (
     <Canvas
-      dpr={props.lowPower ? [1, 1.5] : [1, 2]}
+      dpr={[1, 2]}
       frameloop={props.active ? "always" : "demand"}
-      gl={{ alpha: true, antialias: !props.lowPower, powerPreference: "low-power" }}
+      gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
       camera={{ position: [0, 0, 5], fov: 36 }}
-      shadows={!props.lowPower}
+      shadows
     >
       <ambientLight intensity={0.75} />
       <directionalLight position={[-3, 5, 3]} color="#67e8f9" intensity={2.2} />
@@ -212,15 +202,13 @@ export default function IceScene(props: SceneProps) {
         <Float speed={1.3} rotationIntensity={0.08} floatIntensity={0.28}>
           <ProductPair {...props} />
         </Float>
-        {!props.lowPower && (
-          <ContactShadows
-            position={[0, -1.45, 0]}
-            opacity={0.35}
-            scale={5}
-            blur={2.5}
-            far={3}
-          />
-        )}
+        <ContactShadows
+          position={[0, -1.45, 0]}
+          opacity={0.35}
+          scale={5}
+          blur={2.5}
+          far={3}
+        />
       </Suspense>
       <OrbitControls
         enableZoom={false}
