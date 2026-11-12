@@ -10,7 +10,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Abre `http://localhost:3000`. `npm run build` genera una exportación web estática en `out/`; Vercel la publica como sitio Next.js estático. Para revisar el sitio mientras desarrollas, usa `npm run dev`.
+Abre `http://localhost:3000`. `npm run build` genera una exportación web estática en `out/`; Vercel detecta el proyecto Next.js y publica esa exportación. Para revisar el sitio mientras desarrollas, usa `npm run dev`.
 
 ## Supabase
 
@@ -68,7 +68,7 @@ La escena centra el modelo con su caja envolvente, lo escala a una altura visual
 Repositorio: [Cristian-code24/ICE-CLUB](https://github.com/Cristian-code24/ICE-CLUB).
 
 1. En Vercel, selecciona **Add New → Project** e importa `Cristian-code24/ICE-CLUB` con el directorio raíz del repositorio.
-2. El archivo [`vercel.json`](./vercel.json) fija el preset Next.js, `npm ci`, `npm run build` y la salida estática `out/`.
+2. El archivo [`vercel.json`](./vercel.json) fija el preset Next.js, `npm ci` y `npm run build`. Deja **Output Directory** sin sobrescribir: Next.js necesita su directorio de build para generar `routes-manifest.json`, aunque la exportación estática se escriba en `out/`.
 3. Configura `NEXT_PUBLIC_WHATSAPP_NUMBER`. Si usarás Supabase, agrega también `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. El dominio SEO se toma de `VERCEL_PROJECT_PRODUCTION_URL`; puedes sobrescribirlo con `NEXT_PUBLIC_SITE_URL`.
 4. Pulsa **Deploy**. Vercel vuelve a desplegar automáticamente los siguientes cambios de la rama `main`.
 
