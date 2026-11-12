@@ -17,5 +17,3 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-        env:
-          NEXT_PUBLIC_SITE_URL: https://ice-club.vercel.app

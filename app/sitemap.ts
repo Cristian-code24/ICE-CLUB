@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: "https://iceclub.example",
+      url: siteUrl.toString(),
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,

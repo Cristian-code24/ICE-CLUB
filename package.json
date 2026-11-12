@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "mobile:sync": "npm run build && cap sync android",
+    "android:apk": "npm run mobile:sync && cd android && gradlew.bat assembleDebug",
     "android:open": "cap open android"
   },
   "dependencies": {

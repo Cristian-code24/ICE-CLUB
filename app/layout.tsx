@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
 import NativeAppSetup from "@/components/NativeAppSetup";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,9 +18,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://iceclub.example",
-  ),
+  metadataBase: siteUrl,
   title: "ICE CLUB | Marcianos gourmet artesanos",
   description:
     "Marcianos artesanales, heladitos y mucha frescura. Pide en tu facultad de la UNJFSC, Huacho.",
@@ -48,6 +47,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#021B33",
 };

@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: "pe.iceclub.app",
   appName: "ICE CLUB",
   webDir: "out",
+  server: {
+    androidScheme: "https",
+  },
   backgroundColor: "#021B33",
   plugins: {
     SplashScreen: {

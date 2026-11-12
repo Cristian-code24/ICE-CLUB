@@ -46,6 +46,7 @@ export default function Home() {
   const [pointList, setPointList] = useState(mockDeliveryPoints);
   const [selectedFlavorId, setSelectedFlavorId] = useState(mockFlavors[0].id);
   const [selectedDelivery, setSelectedDelivery] = useState(mockDeliveryPoints[0].id);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [query, setQuery] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -221,6 +222,21 @@ export default function Home() {
     }
   };
 
+  const openGoogleMaps = async () => {
+    const query = deliveryAddress.trim() || "UNJFSC, Huacho, Perú";
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url });
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.error("No se pudo abrir Google Maps:", error);
+      setNotice("No pudimos abrir Google Maps. Escribe la dirección manualmente.");
+    }
+  };
+
   const placeOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!items.length) return;
@@ -229,9 +245,7 @@ export default function Home() {
     const formData = new FormData(event.currentTarget);
     const customerName = String(formData.get("name") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
-    const classroom = String(formData.get("classroom") ?? "").trim();
-    const preferredTime = String(formData.get("time") ?? "").trim();
-    const paymentMethod = String(formData.get("payment") ?? "");
+    const address = String(formData.get("address") ?? "").trim();
     const isNative = Capacitor.isNativePlatform();
     const whatsappTab = isNative ? null : window.open("", "_blank");
     if (whatsappTab) whatsappTab.opener = null;
@@ -244,9 +258,7 @@ export default function Home() {
         customer_name: customerName,
         phone,
         delivery_point_id: selectedDelivery,
-        classroom,
-        preferred_time: preferredTime,
-        payment_method: paymentMethod,
+        delivery_address: address,
         items,
         total: subtotal,
         status: "pending",
@@ -266,9 +278,9 @@ export default function Home() {
       `¡Hola, ICE CLUB! Soy ${customerName}.`,
       orderLines,
       `Total: S/ ${subtotal.toFixed(2)}`,
-      `Entrega: ${deliveryPoint?.name ?? "Campus"}${classroom ? `, ${classroom}` : ""}`,
-      `Hora: ${preferredTime} · Pago: ${paymentMethod}`,
       `Teléfono: ${phone}`,
+      `Dirección de entrega: ${address}`,
+      `Punto de referencia: ${deliveryPoint?.name ?? "Campus"}`,
     ].join("\n");
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     try {
@@ -288,6 +300,7 @@ export default function Home() {
     }
     setSubmitting(false);
     clear();
+    setDeliveryAddress("");
     setCartOpen(false);
   };
 
@@ -821,6 +834,19 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="terms-section page-width" id="terminos" aria-labelledby="terms-title">
+        <div className="terms-card glass">
+          <span className="eyebrow"><span className="section-index">08</span> COMPRA TRANSPARENTE</span>
+          <h2 id="terms-title">Términos y condiciones</h2>
+          <ul>
+            <li>No necesitas crear una cuenta. El pedido se confirma cuando ICE CLUB lo coordina contigo por WhatsApp.</li>
+            <li>Los precios y la disponibilidad se confirman antes de preparar el pedido. La entrega depende de la cobertura y del punto acordado.</li>
+            <li>Usamos tu nombre, celular, dirección y pedido para coordinar la entrega. Al confirmar, el resumen se comparte con ICE CLUB por WhatsApp; si la base de datos está habilitada, también se registra allí.</li>
+            <li>Revisa la dirección, cantidades y total en WhatsApp antes de enviar el mensaje.</li>
+          </ul>
+        </div>
+      </section>
+
       <footer className="site-footer page-width">
         <a className="brand" href="#inicio">
           <span className="brand-mark"><Snowflake size={20} /></span>
@@ -830,6 +856,7 @@ export default function Home() {
         <a className="social-link" href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram de ICE CLUB">
           <Instagram size={17} /> Síguenos <ArrowUpRight size={14} />
         </a>
+        <a className="terms-link" href="#terminos">Términos y condiciones</a>
       </footer>
 
       <AnimatePresence>
@@ -869,18 +896,23 @@ export default function Home() {
                     ))}
                   </div>
                   <form className="checkout-form" onSubmit={placeOrder}>
-                    <label>Tu nombre<input name="name" required placeholder="¿Cómo te llamas?" /></label>
-                    <label>Celular<input name="phone" type="tel" required placeholder="999 999 999" /></label>
-                    <label>Salón / referencia<input name="classroom" placeholder="Ej. Pabellón B, aula 204" /></label>
-                    <div className="form-row">
-                      <label>Hora<input name="time" type="time" required /></label>
-                      <label>Pago<select name="payment" defaultValue="Yape" required><option>Yape</option><option>Plin</option><option>Efectivo</option></select></label>
-                    </div>
-                    <label>Entrega en
-                      <select value={selectedDelivery} onChange={(event) => setSelectedDelivery(event.target.value)}>
-                        {pointList.map((point) => <option key={point.id} value={point.id}>{point.name}</option>)}
-                      </select>
+                    <label>Nombre<input name="name" autoComplete="name" required maxLength={100} placeholder="¿Cómo te llamas?" /></label>
+                    <label>Celular<input name="phone" type="tel" autoComplete="tel" inputMode="tel" required maxLength={24} placeholder="999 999 999" /></label>
+                    <label>Dirección de entrega
+                      <input
+                        name="address"
+                        autoComplete="street-address"
+                        required
+                        maxLength={300}
+                        placeholder="Calle, referencia o enlace de Maps"
+                        value={deliveryAddress}
+                        onChange={(event) => setDeliveryAddress(event.target.value)}
+                      />
                     </label>
+                    <button className="maps-action" type="button" onClick={() => void openGoogleMaps()}>
+                      <MapPin size={14} /> Buscar dirección en Google Maps
+                    </button>
+                    <p className="maps-hint">Busca el lugar y escribe o pega aquí la dirección exacta.</p>
                     <div className="cart-total"><span>Total</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
                     <button className="button-primary checkout-button" disabled={submitting}>
                       {submitting ? "Preparando..." : "Confirmar por WhatsApp"} <ArrowRight size={16} />
